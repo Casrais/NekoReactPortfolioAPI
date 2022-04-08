@@ -347,3 +347,17 @@ healthchecksdb
 
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
+
+CosmosAPI/tempkey.jwk
+
+CosmosAPI/Properties/launchSettings.json
+
+CosmosAPI/Config.cs
+
+CosmosAPI/Properties/
+
+CosmosAPI/.config/
+
+CosmosAPI/appsettings.Development.json
+
+CosmosAPI/appsettings.json
