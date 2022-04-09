@@ -29,6 +29,7 @@ namespace CosmosAPI.Controllers
         [HttpGet("{Postid}")]
         public string Get(string Postid)
         {
+            Guid GuidID = Guid.Parse(Postid);
             var results = _cosmosDbService.GetFilesAsync("SELECT f.id, f.Title, f.DateCreated, f.Excerpt, f.URL, f.LightBoxURL FROM Files f join p in f.PostId where p.id = '" + Postid + "'").Result;
             return results;
         }

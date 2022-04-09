@@ -39,6 +39,7 @@ namespace CosmosAPI.Controllers
         {
             try
             {
+                Guid GuidID = Guid.Parse(id);
             var result = _cosmosDbService.GetFilesAsync("SELECT top 1 * FROM c WHERE c.id = '"+id+"'").Result;
             return result;
             }

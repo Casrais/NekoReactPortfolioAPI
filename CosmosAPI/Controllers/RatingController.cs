@@ -37,6 +37,7 @@ namespace CosmosAPI.Controllers
         [HttpGet("{id}")]
         public string Get(string id)
         {
+            Guid GuidID = Guid.Parse(id);
             var results = _cosmosDbService.GetRatingsAsync("SELECT top 1 f.id, f.FileId, f.UserName, f.DateCreated, f.Rate FROM Identity_FileRating f where f.FileId = '" + id + "'").Result;
             return results;
         }

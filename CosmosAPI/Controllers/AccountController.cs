@@ -22,14 +22,12 @@ namespace CosmosAPI.Controllers
         private readonly UserManager<Identity> userManager;
         private readonly SignInManager<Identity> signInManager;
         private readonly TokenService tokenService;
-        private readonly RoleManager<IdentityRole> roleManager;
 
-        public AccountController(UserManager<Identity> userManager, SignInManager<Identity> signInManager, TokenService tokenService, RoleManager<IdentityRole> roleManager)
+        public AccountController(UserManager<Identity> userManager, SignInManager<Identity> signInManager, TokenService tokenService)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
             this.tokenService = tokenService;
-            this.roleManager = roleManager;
         }
 
         [AllowAnonymous]
@@ -71,22 +69,23 @@ namespace CosmosAPI.Controllers
             {
                 //DisplayName = registerDto.DisplayName,
                 UserName = registerDto.Username,
-                Email = registerDto.Email,
+                Email = registerDto.Email
             };
+
 
             var result = await userManager.CreateAsync(user, registerDto.Password);
 
+            
 
             if (result.Succeeded)
             {
                 return CreateUserObject(user);
-
             }
 
             return BadRequest("Problem registering user.");
         }
 
-        [Authorize(AuthenticationSchemes = "Bearer")]
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<UserDto>> GetCurrentUser()
         {

@@ -41,8 +41,9 @@ namespace CosmosAPI.Controllers
         {
             try
             {
-            var result = _cosmosDbService.GetCategorysAsync("SELECT top 1 * FROM c WHERE c.id = '"+id+"'").Result;
-            return result;
+                Guid GuidID = Guid.Parse(id);
+                var result = _cosmosDbService.GetCategorysAsync("SELECT top 1 * FROM c WHERE c.id = '"+id+"'").Result;
+                return result;
             }
             catch
             {
