@@ -563,16 +563,17 @@ namespace CosmosAPI.Services
         //    }
         //}
 
-        public async Task<string> GetRatingAsync(Guid id)
+        public async Task<string> GetRatingAsync(string id)
         {
             try
             {
-                ItemResponse<Rating> response = await this._containerRatings.ReadItemAsync<Rating>(id.ToString(), new PartitionKey(id.ToString()));
+                ItemResponse<Rating> response = await this._containerRatings.ReadItemAsync<Rating>(id, new PartitionKey(id));
                 return response.Resource.ToString();
             }
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                return ex.Message;
+                //return ex.Message;
+                return "";
             }
 
         }

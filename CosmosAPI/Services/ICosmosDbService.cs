@@ -55,7 +55,7 @@
 
 
         Task<string> GetRatingsAsync(string query);
-        Task<string> GetRatingAsync(Guid id);
+        Task<string> GetRatingAsync(string id);
         //Task AddRatingAsync(Rating item);
         Task<string> UpdateRatingAsync(Guid id, Rating item);
         //Task<string> DeleteRatingAsync(Guid id);

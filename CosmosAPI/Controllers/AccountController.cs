@@ -65,30 +65,30 @@ namespace CosmosAPI.Controllers
                 return BadRequest("Username taken");
             }
 
-            if (registerDto.Password.Any(char.IsDigit))
-            {
-                return BadRequest("Passwords need a number");
-            }
+            //if (registerDto.Password.Any(char.IsDigit))
+            //{
+            //    return BadRequest("Passwords need a number");
+            //}
 
-            if (registerDto.Password.Any(char.IsLower))
-            {
-                return BadRequest("Passwords need a lower case character");
-            }
+            //if (registerDto.Password.Any(char.IsLower))
+            //{
+            //    return BadRequest("Passwords need a lower case character");
+            //}
 
-            if (registerDto.Password.Any(char.IsUpper))
-            {
-                return BadRequest("Passwords need an upper case character");
-            }
+            //if (registerDto.Password.Any(char.IsUpper))
+            //{
+            //    return BadRequest("Passwords need an upper case character");
+            //}
 
-            if (registerDto.Password.Any(char.IsSymbol))
-            {
-                return BadRequest("Passwords need a special character");
-            }
+            //if (registerDto.Password.Any(char.IsSymbol))
+            //{
+            //    return BadRequest("Passwords need a special character");
+            //}
 
-            if (registerDto.Password.Length > 5)
-            {
-                return BadRequest("Passwords need to be at least 6 characters long");
-            }
+            //if (registerDto.Password.Length > 5)
+            //{
+            //    return BadRequest("Passwords need to be at least 6 characters long");
+            //}
 
             var user = new Identity
             {

@@ -98,8 +98,7 @@ namespace CosmosAPI
                 opt.Filters.Add(new AuthorizeFilter(policy));
             });
 
-            services.AddHttpClient();
-
+            //services.AddHttpClient();
 
             //services.AddSwaggerGen(c =>
             //           {
@@ -134,7 +133,6 @@ namespace CosmosAPI
 
             services.AddIdentityCore<Identity>().AddEntityFrameworkStores<CosmosAPIDataContext>().AddSignInManager<SignInManager<Identity>>();
 
-            //services.AddControllers().AddNewtonsoftJson(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
             KeyVaultSecret secretDatabaseName;
             KeyVaultSecret secretCosmosKey;
@@ -145,8 +143,6 @@ namespace CosmosAPI
             KeyVaultSecret secretTokenKey;
             SecretClient secretclient;
 
-            try
-            {
             SecretClientOptions options = new SecretClientOptions()
             {
                 Retry =
@@ -157,8 +153,7 @@ namespace CosmosAPI
                          }
             };
             secretclient = new SecretClient(new Uri(Environment.GetEnvironmentVariable("VaultUri")), new DefaultAzureCredential(), options);
-            }
-            catch (Exception e) { throw; }
+
             
 
             secretDatabaseName = secretclient.GetSecret("DatabaseName");
@@ -181,10 +176,8 @@ namespace CosmosAPI
 
             services.AddEntityFrameworkCosmos();
 
-            //cosmosClient = new CosmosClient(Configuration.GetSection("CosmosAccount").Value,Configuration.GetSection("CosmosKey").Value, new CosmosClientOptions() { ApplicationName = "NekoPortfolio" });
             services.AddSingleton<ICosmosDbService>(InitializeCosmosClientInstanceAsync(databaseName, containerName, account, key, connection).GetAwaiter().GetResult());
-            //services.AddDbContext<CosmosAPIDataContext>();
-
+           
             services.AddCosmosIdentity<CosmosAPIDataContext, Identity, IdentityRole>(
                  // Auth provider standard configuration (e.g.: account confirmation, password requirements, etc.)
                   options => { // User settings
@@ -247,10 +240,7 @@ namespace CosmosAPI
     );
 
 
-            //services.AddIdentity<Identity, IdentityRole>().AddEntityFrameworkStores<CosmosAPIDataContext>();
-            //services.AddIdentityServer().AddApiAuthorization<IdentityUser, CosmosAPIDataContext>();
             services.AddIdentityServer().AddApiAuthorization<Identity, CosmosAPIDataContext>();
-            //services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<IdentityDbContext>();
 
 
             services.ConfigureApplicationCookie(options =>
@@ -266,21 +256,15 @@ namespace CosmosAPI
                 options.SlidingExpiration = true;
             });
 
-            //services.AddScoped<TokenService>();
             services.AddTransient(serviceProvider => new TokenService(Configuration, tokenKey, authDomain, authAudience));
+
+            
+
 
             //services.AddAuthorization(options =>
             //{
-            //    options.FallbackPolicy = new AuthorizationPolicyBuilder()
-            //        .RequireAuthenticatedUser()
-            //        .Build();
+            //    options.AddPolicy("read:messages", policy => policy.Requirements.Add(new HasScopeRequirement("read:messages", domain)));
             //});
-
-
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("read:messages", policy => policy.Requirements.Add(new HasScopeRequirement("read:messages", domain)));
-            });
 
             services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
 
@@ -293,9 +277,6 @@ namespace CosmosAPI
                     policy.AllowAnyMethod().AllowAnyHeader().WithOrigins("https://localhost:44300");
                 });
             });
-
-
-            // uncomment this if you want to use authentication with swagger
             
         }
 
@@ -307,7 +288,8 @@ namespace CosmosAPI
             //    {
             //        c.SerializeAsV2 = true;
             //    });
-            //app.UseSwaggerUI(c => {
+            //app.UseSwaggerUI(c =>
+            //{
             //    c.SwaggerEndpoint("/swagger/v1/swagger.json", "NekoAPI V1");
             //});
 

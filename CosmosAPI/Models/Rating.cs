@@ -9,7 +9,7 @@ namespace CosmosAPI.Models
     public class Rating
     {
         [JsonProperty(PropertyName = "id")]
-        public Guid id { get; set; }
+        public string id { get; set; }
         public string UserName { get; set; }
         public string FileId { get; set; }
         public float Rate { get; set; }

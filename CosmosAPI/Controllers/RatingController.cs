@@ -33,37 +33,53 @@ namespace CosmosAPI.Controllers
             return results;
         }
 
-        [Authorize(AuthenticationSchemes = "Bearer")]
+        //[AllowAnonymous]
         [HttpGet("{id}")]
         public string Get(string id)
         {
-            Guid GuidID = Guid.Parse(id);
-            var results = _cosmosDbService.GetRatingsAsync("SELECT top 1 f.id, f.FileId, f.UserName, f.DateCreated, f.Rate FROM Identity_FileRating f where f.FileId = '" + id + "'").Result;
-            return results;
+            try
+            {
+                var results = _cosmosDbService.GetRatingAsync(id).Result;
+                return results;
+            }
+            catch { return ""; }
+            
         }
 
 
 
         [Authorize(AuthenticationSchemes = "Bearer")]
-        [HttpPut]
-        public string Put([FromBody] Rating value)
+        [HttpPost]
+        public string Post([FromBody] Rating value)
         {
-            string response = Get(value.id.ToString());
+            string response;
+            try
+            {
+                response = Get(value.id);
+            }
+            catch
+            {
+                response = "";
+            }
+            
             value.DateCreated = DateTime.Today;
             value.UserName = value.UserName.ToUpper();
-            if (response == "" | response == null)
+            string newId;
+            if (response == null | response == "")
             {
-                value.id = Guid.NewGuid();
-                response = value.id.ToString();
+                newId = Guid.NewGuid().ToString();
             }
-            if (response != "" & response != null)
+            else
+            {
+                newId = response.Substring(7,36);
+            }
+            if (newId != "")
             {
                 try
                 {
-                    string stringId = value.id.ToString();
-                    value.id = Guid.Parse(value.id.ToString());
-                    _cosmosDbService.UpdateRatingAsync(value.id, value);
-                    return "Successfully updated file " + stringId;
+                    value.id = newId;
+                    _cosmosDbService.UpdateRatingAsync(Guid.Parse(newId), value);
+                    return value.id;
                 }
                 catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
