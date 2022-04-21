@@ -1,16 +1,11 @@
 using CosmosAPI.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Cosmos;
 using Azure.Security.KeyVault.Secrets;
@@ -32,8 +27,13 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Swashbuckle.Swagger;
-
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Reflection;
+using System.IO;
+using Microsoft.Extensions.Options;
+using Swashbuckle.AspNetCore.Swagger;
+using Swashbuckle.AspNetCore.SwaggerUI;
 
 namespace CosmosAPI
 {
@@ -98,10 +98,55 @@ namespace CosmosAPI
                 opt.Filters.Add(new AuthorizeFilter(policy));
             });
 
+            services.AddHttpClient();
+
+
+            //services.AddSwaggerGen(c =>
+            //           {
+            //               c.SwaggerDoc("v1", new OpenApiInfo { Title = "NekoAPI", Version = "v1" });
+            //               c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+            //               {
+            //                   Name = "Authorization",
+            //                   Type = SecuritySchemeType.ApiKey,
+            //                   Scheme = "Bearer",
+            //                   BearerFormat = "JWT",
+            //                   In = ParameterLocation.Header,
+            //                   Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 1safsfsdfdfd\"",
+            //               });
+            //               c.AddSecurityRequirement(new OpenApiSecurityRequirement
+            //{
+            //    {
+            //          new OpenApiSecurityScheme
+            //            {
+            //                Reference = new OpenApiReference
+            //                {
+            //                    Type = ReferenceType.SecurityScheme,
+            //                    Id = "Bearer"
+            //                }
+            //            },
+            //            new string[] {}
+            //    }
+            //});
+            //           });
+
+            ////services.AddTransient<IUserService, UserService>();
+            //services.AddTransient<ISwaggerProvider, SwaggerGenerator>();
+
             services.AddIdentityCore<Identity>().AddEntityFrameworkStores<CosmosAPIDataContext>().AddSignInManager<SignInManager<Identity>>();
 
             //services.AddControllers().AddNewtonsoftJson(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
+            KeyVaultSecret secretDatabaseName;
+            KeyVaultSecret secretCosmosKey;
+            KeyVaultSecret secretCosmosAccount;
+            KeyVaultSecret secretCosmosConnection;
+            KeyVaultSecret secretAuth0Domain;
+            KeyVaultSecret secretAuth0Audience;
+            KeyVaultSecret secretTokenKey;
+            SecretClient secretclient;
+
+            try
+            {
             SecretClientOptions options = new SecretClientOptions()
             {
                 Retry =
@@ -111,15 +156,18 @@ namespace CosmosAPI
                             MaxRetries = 5
                          }
             };
-            var secretclient = new SecretClient(new Uri(Environment.GetEnvironmentVariable("VaultUri")), new DefaultAzureCredential(), options);
+            secretclient = new SecretClient(new Uri(Environment.GetEnvironmentVariable("VaultUri")), new DefaultAzureCredential(), options);
+            }
+            catch (Exception e) { throw; }
+            
 
-            KeyVaultSecret secretDatabaseName = secretclient.GetSecret("DatabaseName");
-            KeyVaultSecret secretCosmosKey = secretclient.GetSecret("CosmosKey");
-            KeyVaultSecret secretCosmosAccount = secretclient.GetSecret("NekoCosmosAccount");
-            KeyVaultSecret secretCosmosConnection = secretclient.GetSecret("NekoCosmosConnection");
-            KeyVaultSecret secretAuth0Domain = secretclient.GetSecret("NekoAuthDomain");
-            KeyVaultSecret secretAuth0Audience = secretclient.GetSecret("NekoAuthAudience");
-            KeyVaultSecret secretTokenKey = secretclient.GetSecret("NekoTokenKey");
+            secretDatabaseName = secretclient.GetSecret("DatabaseName");
+            secretCosmosKey = secretclient.GetSecret("CosmosKey");
+            secretCosmosAccount = secretclient.GetSecret("NekoCosmosAccount");
+            secretCosmosConnection = secretclient.GetSecret("NekoCosmosConnection");
+            secretAuth0Domain = secretclient.GetSecret("NekoAuthDomain");
+            secretAuth0Audience = secretclient.GetSecret("NekoAuthAudience");
+            secretTokenKey = secretclient.GetSecret("NekoTokenKey");
 
             string databaseName = secretDatabaseName.Value;
             string containerName = Configuration.GetSection("ContainerName").Value;
@@ -248,48 +296,20 @@ namespace CosmosAPI
 
 
             // uncomment this if you want to use authentication with swagger
- //           services.AddSwaggerGen(c =>
- //           {
- //               c.SwaggerDoc("v1", new OpenApiInfo { Title = "CosmosAPI", Version = "v1" });
- //               c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
- //               {
- //                   Name = "Authorization",
- //                   Type = SecuritySchemeType.ApiKey,
- //                   Scheme = "Bearer",
- //                   BearerFormat = "JWT",
- //                   In = ParameterLocation.Header,
- //                   Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 1safsfsdfdfd\"",
- //               });
- //               c.AddSecurityRequirement(new OpenApiSecurityRequirement
- //{
- //    {
- //          new OpenApiSecurityScheme
- //            {
- //                Reference = new OpenApiReference
- //                {
- //                    Type = ReferenceType.SecurityScheme,
- //                    Id = "Bearer"
- //                }
- //            },
- //            new string[] {}
- //    }
- //});
- //           });
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
 
-            
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "CosmosAPI v1"));
-            }
-
-            
+            //app.UseSwagger(c =>
+            //    {
+            //        c.SerializeAsV2 = true;
+            //    });
+            //app.UseSwaggerUI(c => {
+            //    c.SwaggerEndpoint("/swagger/v1/swagger.json", "NekoAPI V1");
+            //});
 
             app.UseHttpsRedirection();
 

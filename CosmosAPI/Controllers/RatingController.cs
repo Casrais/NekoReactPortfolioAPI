@@ -27,7 +27,7 @@ namespace CosmosAPI.Controllers
 
         [Authorize(AuthenticationSchemes = "Bearer")]
         [HttpPost("UserFileRating")]
-        public string Get(RequestRating rating)
+        public string Post(RequestRating rating)
         {
             var results = _cosmosDbService.GetRatingsAsync("SELECT top 1 f.id, f.FileId, f.UserName, f.DateCreated, f.Rate FROM Identity_FileRating f where f.FileId = '" + rating.FileId + "' and f.UserName = '" + rating.UserName.ToUpper() + "'").Result;
             return results;
@@ -45,10 +45,10 @@ namespace CosmosAPI.Controllers
 
 
         [Authorize(AuthenticationSchemes = "Bearer")]
-        [HttpPut("{id}")]
-        public string Put(string id, [FromBody] Rating value)
+        [HttpPut]
+        public string Put([FromBody] Rating value)
         {
-            string response = Get(id);
+            string response = Get(value.id.ToString());
             value.DateCreated = DateTime.Today;
             value.UserName = value.UserName.ToUpper();
             if (response == "" | response == null)
@@ -60,20 +60,21 @@ namespace CosmosAPI.Controllers
             {
                 try
                 {
-                    value.id = Guid.Parse(id);
-                    _cosmosDbService.UpdateRatingAsync(Guid.Parse(id), value);
-                    return "Successfully updated file " + id;
+                    string stringId = value.id.ToString();
+                    value.id = Guid.Parse(value.id.ToString());
+                    _cosmosDbService.UpdateRatingAsync(value.id, value);
+                    return "Successfully updated file " + stringId;
                 }
                 catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
                     Console.WriteLine(ex);
-                    return "Error: did not update file " + id;
+                    return "Error: did not update file.";
                 }
 
             }
             else
             {
-                return "Error: File " + id + " not found.";
+                return "Error: File not found.";
             }
         }
     }

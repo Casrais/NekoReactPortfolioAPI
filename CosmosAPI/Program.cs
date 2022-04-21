@@ -26,12 +26,12 @@ namespace CosmosAPI
     //var options = new DefaultAzureCredentialOptions { ExcludeVisualStudioCredential = true };
     //var client = new SecretClient(new Uri(Environment.GetEnvironmentVariable("VaultUri")), new DefaultAzureCredential(options));
     //string userAssignedClientId = Environment.GetEnvironmentVariable("VaultID");
-    var kvUri = Environment.GetEnvironmentVariable("VaultUri");
-    var IdentityClientID = Environment.GetEnvironmentVariable("ManagedIdentityClientId");
-    var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions { ManagedIdentityClientId = IdentityClientID });
-    config.AddAzureKeyVault(
-            new Uri(kvUri),
-            credential);
+    //var kvUri = Environment.GetEnvironmentVariable("VaultUri");
+    //var IdentityClientID = Environment.GetEnvironmentVariable("ManagedIdentityClientId");
+    //var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions { ManagedIdentityClientId = IdentityClientID });
+    //config.AddAzureKeyVault(
+    //        new Uri(kvUri),
+    //        credential);
 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
